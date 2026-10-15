@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blood Donation Database</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7f8; color: #202b33; font: 17px/1.6 system-ui, sans-serif; }
+    main { width: min(760px, calc(100% - 32px)); margin: 42px auto; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.4rem); line-height: 1.2; }
+    h2 { margin: 0 0 12px; font-size: 1.25rem; }
+    .intro { margin: 10px 0 24px; color: #52616b; }
+    .card { margin: 18px 0; padding: 24px; background: white; border: 1px solid #e0e6e9; border-radius: 12px; }
+    label { display: block; margin-bottom: 8px; font-weight: 650; }
+    textarea { display: block; width: 100%; min-height: 96px; padding: 12px; border: 1px solid #b9c5cb; border-radius: 8px; font: inherit; resize: vertical; }
+    textarea:focus { outline: 3px solid #b9e3e5; border-color: #087f8c; }
+    button { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 8px; background: #087f8c; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+    button:hover { background: #066b75; }
+    button:disabled { opacity: .7; cursor: wait; }
+    .working { margin: 10px 0 0; color: #14545b; font-weight: 600; }
+    .examples { margin-top: 16px; color: #52616b; font-size: .94rem; }
+    .examples button { margin: 6px 6px 0 0; padding: 6px 10px; background: #edf5f5; color: #14545b; font-size: .9rem; font-weight: 500; }
+    .examples button:hover { background: #dceeee; }
+    .answer { white-space: pre-wrap; }
+    .error { color: #8f241d; background: #fff5f3; border-color: #efcbc6; }
+    pre { margin: 0; padding: 14px; border-radius: 8px; background: #f1f4f5; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .9rem; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    th, td { padding: 9px 11px; text-align: left; border-bottom: 1px solid #e6ebed; }
+    th { background: #f5f7f8; }
+    .note { color: #66747c; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Blood donation database</h1>
+    <p class="intro">Ask a question in your own words. You don’t need to know SQL.</p>
+
+    <section class="card">
+      <form id="question-form" method="post">
+        <label for="question">What would you like to know?</label>
+        <textarea id="question" name="question" placeholder="For example: How many donations were made at each location?" required>{{ question }}</textarea>
+        <button type="submit">Get an answer</button>
+        <p id="working" class="working" role="status" aria-live="polite" hidden>Looking that up… This can take a few seconds.</p>
+      </form>
+      <div class="examples">
+        Need an idea? Try:
+        <button type="button" onclick="useExample(this)">Count donations by location</button>
+        <button type="button" onclick="useExample(this)">List donors with O-positive blood</button>
+        <button type="button" onclick="useExample(this)">Show each donor’s total donations</button>
+      </div>
+    </section>
+
+    {% if error %}<section class="card error" role="alert">{{ error }}</section>{% endif %}
+    {% if answer %}<section class="card"><h2>Answer</h2><div class="answer">{{ answer }}</div></section>{% endif %}
+    {% if sql %}
+      <section class="card"><h2>Query used</h2><pre><code>{{ sql }}</code></pre></section>
+      {% if columns %}<section class="card">
+        <h2>Results</h2>
+        {% if truncated %}<p class="note">Showing the first 200 rows.</p>{% endif %}
+        <div class="table-wrap"><table><thead><tr>{% for col in columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for row in rows %}<tr>{% for col in columns %}<td>{{ row[col] }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>
+      </section>{% endif %}
+    {% endif %}
+  </main>
+  <script>
+    document.getElementById('question-form').addEventListener('submit', function (event) {
+      if (window.location.protocol === 'file:') {
+        event.preventDefault();
+        const notice = document.getElementById('working');
+        notice.textContent = 'This page needs the Python app to answer questions. Close this file and start the app with run_app.bat.';
+        notice.hidden = false;
+        return;
+      }
+      const button = this.querySelector('button[type="submit"]');
+      button.disabled = true;
+      button.textContent = 'Working…';
+      document.getElementById('working').hidden = false;
+    });
+    function useExample(button) {
+      const input = document.getElementById('question');
+      input.value = button.textContent;
+      input.focus();
+    }
+  </script>
+</body>
+</html>
